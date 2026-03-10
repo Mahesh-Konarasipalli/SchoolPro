@@ -135,9 +135,22 @@ public class pageController {
         return "admin-dashboard";
     }
 
-    @GetMapping("/admin/delete/{id}")
+   @GetMapping("/admin/delete/{id}")
+    @org.springframework.transaction.annotation.Transactional // Ensures all deletes happen or none do
     public String deleteUser(@PathVariable Long id){
-        userRepository.deleteById(id);
+        // 1. Find the student first
+        User student = userRepository.findById(id).orElse(null);
+        if (student != null) {
+            // 2. Manually wipe out their related records to satisfy Foreign Key constraints
+            // This clears the "child" rows so the "parent" (User) can be deleted
+            attendanceRepository.deleteByStudent(student);
+            gradeRepo.deleteByStudent(student);
+
+            // 3. Now it is safe to delete the student
+            userRepository.delete(student);
+            System.out.println("SUCCESS: Student and all related records removed.");
+        }
+        
         return "redirect:/admin/dashboard?deleted";
     }
 

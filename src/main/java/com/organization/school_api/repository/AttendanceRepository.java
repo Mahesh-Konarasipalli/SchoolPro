@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import com.organization.school_api.Entity.Attendance;
+import com.organization.school_api.Entity.User;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
@@ -18,4 +19,5 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     
     // Find all attendance records for one student (for their report card later!)
     List<Attendance> findByStudentIdOrderByDateDesc(Long studentId);
+    void deleteByStudent(User student);
 }
