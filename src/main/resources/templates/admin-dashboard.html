@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | School Management</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    
+    <script>
+        const savedTheme = localStorage.getItem('color-theme');
+        const currentHour = new Date().getHours();
+        const isNightTime = currentHour >= 18 || currentHour < 6;
+        if (savedTheme === 'dark' || (!savedTheme && isNightTime)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        .dark ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 antialiased selection:bg-indigo-100 dark:selection:bg-indigo-900/50 selection:text-indigo-900 dark:selection:text-indigo-200 transition-colors duration-300">
+    <div class="flex min-h-screen">
+        
+        <aside class="w-64 bg-slate-900 dark:bg-slate-950 text-slate-300 flex flex-col shadow-2xl z-20 transition-colors duration-300 border-r border-slate-800 dark:border-slate-800/50">
+            <div class="p-6 border-b border-slate-800 dark:border-slate-800/50">
+                <h1 class="text-xl font-bold text-white flex items-center gap-3">
+                    <i class="ph-fill ph-graduation-cap text-indigo-500 text-2xl"></i>
+                    SchoolPro
+                </h1>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-2">
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Management</p>
+                <a href="#" class="flex items-center gap-3 p-3 bg-indigo-600 text-white rounded-lg font-medium shadow-sm transition-colors">
+                    <i class="ph ph-users text-lg"></i> Students
+                </a>
+                <a th:href="@{/admin/classes}" class="flex items-center gap-3 p-3 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg font-medium transition-colors hover:text-white">
+                    <i class="ph ph-books text-lg"></i> Classes
+                </a>
+                <a th:href="@{/admin/attendance}" class="flex items-center gap-3 p-3 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg font-medium transition-colors hover:text-white">
+                    <i class="ph ph-calendar-check text-lg"></i> Take Attendance
+                </a>
+                <a th:href="@{/admin/attendance-report}" class="flex items-center gap-3 p-3 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg font-medium transition-colors hover:text-white">
+                    <i class="ph ph-chart-line-up text-lg"></i> Reports
+                </a>
+            </nav>
+            
+            <button onclick="document.getElementById('passwordModal').classList.remove('hidden')" class="flex items-center gap-3 p-3 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg transition-colors w-full text-left">
+                <i class="ph ph-lock-key text-lg"></i> Security
+            </button>
+            
+            <div class="p-4 border-t border-slate-800 dark:border-slate-800/50">
+                <a th:href="@{/logout}" class="flex items-center gap-3 p-3 text-slate-400 hover:text-rose-400 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg transition-colors">
+                    <i class="ph ph-sign-out text-lg"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+            
+            <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-8 py-5 flex justify-between items-center shrink-0 z-10 transition-colors duration-300">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
+                        <span id="dynamicGreeting">Welcome</span>, Admin! 👋
+                    </h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Manage enrollments and academic records</p>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button id="theme-toggle" type="button" class="bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-amber-400 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-amber-500 transition-all">
+                        <i id="theme-toggle-dark-icon" class="ph-fill ph-moon hidden text-xl"></i>
+                        <i id="theme-toggle-light-icon" class="ph-fill ph-sun hidden text-xl"></i>
+                    </button>
+                    
+                    <button onclick="toggleModal('studentModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm flex items-center gap-2 transition-all active:scale-95">
+                        <i class="ph ph-plus-circle text-lg"></i> Add Student
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-auto p-8 bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+                
+                <div id="status-message" class="mb-6 space-y-3 empty:hidden">
+                    <div th:if="${param.gradeDeleted != null}" class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 rounded-lg flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-xl"></i><span class="font-medium">Grade removed successfully.</span></div>
+                        <button onclick="hideMessage(this)" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300"><i class="ph ph-x"></i></button>
+                    </div>
+                    <div th:if="${param.deleted != null}" class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 rounded-lg flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-xl"></i><span class="font-medium">Student removed from directory.</span></div>
+                        <button onclick="hideMessage(this)" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300"><i class="ph ph-x"></i></button>
+                    </div>
+                    <div th:if="${param.added != null}" class="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 rounded-lg flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-xl"></i><span class="font-medium">New student added successfully.</span></div>
+                        <button onclick="hideMessage(this)" class="text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300"><i class="ph ph-x"></i></button>
+                    </div>
+                    <div th:if="${param.studentUpdated != null}" class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 rounded-lg flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-xl"></i><span class="font-medium">Student profile updated.</span></div>
+                        <button onclick="hideMessage(this)" class="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300"><i class="ph ph-x"></i></button>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4 px-1">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <i class="ph-fill ph-calendar-blank text-indigo-500"></i> Upcoming Events
+                        </h3>
+                        <button onclick="document.getElementById('eventModal').classList.remove('hidden')" class="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-2 rounded-lg transition-colors shadow-sm">
+                            + New Event
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div th:each="event : ${events}" class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 relative group hover:shadow-md transition-shadow">
+                            <a th:if="${event.id != null and event.id > 0}" 
+                               th:href="@{'/admin/delete-event/' + ${event.id}}" 
+                               onclick="return confirm('Remove this event?')" 
+                               class="absolute top-3 right-3 text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 hidden group-hover:block transition-colors">
+                                <i class="ph-fill ph-x-circle text-xl"></i>
+                            </a>
+                            
+                            <div class="text-xs font-black uppercase tracking-wider mb-2" 
+                                th:classappend="${event.eventType == 'HOLIDAY' ? 'text-emerald-500 dark:text-emerald-400' : (event.eventType == 'EXAM' ? 'text-rose-500 dark:text-rose-400' : 'text-blue-500 dark:text-blue-400')}"
+                                th:text="${event.eventType}">TYPE</div>
+                            <h4 class="font-bold text-slate-800 dark:text-slate-100 mb-1 text-base leading-tight" th:text="${event.title}">Event Title</h4>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1.5 mt-2">
+                                <i class="ph-bold ph-calendar-check"></i> <span th:text="${event.eventDate}">2026-05-10</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col xl:flex-row justify-between items-end gap-4 mb-6">
+                    <div class="bg-white dark:bg-slate-800 px-6 py-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center gap-4 min-w-[250px] w-full xl:w-auto transition-colors">
+                        <div class="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 p-3 rounded-lg">
+                            <i class="ph ph-users-three text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Registered</p>
+                            <h3 class="text-2xl font-bold text-slate-800 dark:text-white" th:text="${#lists.size(students)}">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-3 w-full xl:w-auto">
+                        <div class="relative w-full md:w-48">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="ph ph-chalkboard-teacher text-lg"></i></span>
+                            <select id="classFilter" onchange="runAdvancedSearch()" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm bg-white dark:bg-slate-900 dark:text-slate-200 cursor-pointer appearance-none">
+                                <option value="ALL">All Classes</option>
+                                <option value="Pending">Unassigned (Pending)</option>
+                                <option th:each="c : ${classes}" th:value="${c.className}" th:text="${c.className}"></option>
+                            </select>
+                        </div>
+                        <div class="relative w-full md:w-48">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="ph ph-medal text-lg"></i></span>
+                            <select id="marksFilter" onchange="runAdvancedSearch()" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm bg-white dark:bg-slate-900 dark:text-slate-200 cursor-pointer appearance-none">
+                                <option value="ALL">All Grades</option>
+                                <option value="EXCELLENT">90% and above 🏆</option>
+                                <option value="GOOD">75% - 89% 🌟</option>
+                                <option value="AVERAGE">50% - 74% 📚</option>
+                                <option value="FAIL">Below 50% ⚠️</option>
+                            </select>
+                        </div>
+                        <div class="relative w-full md:w-72">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="ph ph-magnifying-glass text-lg"></i></span>
+                            <input type="text" id="searchInput" onkeyup="runAdvancedSearch()" placeholder="Search name or email..." class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm bg-white dark:bg-slate-900 dark:text-slate-200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
+                    <table class="w-full text-left text-sm whitespace-nowrap" id="studentTable">
+                        <thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-semibold">
+                            <tr>
+                                <th class="px-6 py-4 tracking-wider">Student Profile</th>
+                                <th class="px-6 py-4 tracking-wider">Role</th>
+                                <th class="px-6 py-4 tracking-wider">Classroom</th>
+                                <th class="px-6 py-4 tracking-wider text-right">Avg Marks</th>
+                                <th class="px-6 py-4 tracking-wider text-right">Manage</th> </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50" id="studentTableBody">
+                            <tr th:each="user : ${students}" class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors student-row">
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-slate-800 dark:text-slate-200 student-name" th:text="${user.fullName}">Name</span>
+                                        <span class="text-slate-500 dark:text-slate-400 text-xs mt-0.5 student-email" th:text="${user.email}">Email</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-md text-xs font-bold border border-indigo-100 dark:border-indigo-500/20" th:text="${user.role}">ROLE</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-slate-600 dark:text-slate-300 font-medium flex items-center gap-1.5 student-class" th:text="${user.studentClass?.className ?: 'Pending'}">
+                                        Class Name
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <span class="font-bold text-slate-700 dark:text-slate-200 student-marks" th:text="${user.averageGrade} + '%'">0.0%</span>
+                                </td>
+                                <td class="px-6 py-4 text-right space-x-2">
+                                    
+                                    <button type="button" 
+                                            th:attr="data-id=${user.id}, data-studentid=${user.studentId}, data-name=${user.fullName}, data-email=${user.email}, data-classid=${user.studentClass?.id}" 
+                                            onclick="openEditStudentModal(this)"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 rounded-md font-medium transition-colors" title="Edit Student">
+                                        <i class="ph ph-pencil-simple text-base"></i> Edit
+                                    </button>
+
+                                    <button type="button" th:attr="data-id=${user.id}, data-name=${user.fullName}" onclick="showGrades(this)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 hover:text-slate-800 dark:hover:text-white rounded-md font-medium transition-colors" title="View Grades">
+                                        <i class="ph ph-eye text-base"></i> View
+                                    </button>
+
+                                    <button type="button" th:attr="data-id=${user.id}, data-name=${user.fullName}" onclick="openGradeModal(this)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-md font-medium transition-colors" title="Add Grade">
+                                        <i class="ph ph-plus text-base"></i> Grade
+                                    </button>
+
+                                    <a th:href="@{'/admin/delete/' + ${user.id}}" onclick="return confirm('Confirm removal of this student from the system?')"
+                                        class="inline-flex items-center justify-center w-8 h-8 text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20 hover:text-rose-700 dark:hover:text-rose-300 rounded-md transition-colors" title="Remove Student">
+                                        <i class="ph ph-trash text-lg"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(students)}" id="emptyStateRow">
+                                <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                    <i class="ph ph-users text-4xl mb-3 text-slate-300 dark:text-slate-600"></i>
+                                    <p class="font-medium">No students enrolled yet.</p>
+                                </td>
+                            </tr>
+                            <tr id="noSearchResults" class="hidden">
+                                <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                    <i class="ph ph-magnifying-glass text-4xl mb-3 text-slate-300 dark:text-slate-600"></i>
+                                    <p class="font-medium">No students match your search criteria.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="studentModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md p-6 md:p-8 rounded-2xl shadow-2xl relative border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Register Student</h3>
+                <button onclick="toggleModal('studentModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <form th:action="@{/admin/add-student}" method="post" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Student ID</label>
+                    <input type="text" name="studentId" placeholder="e.g. STU-1001" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Full Name</label>
+                    <input type="text" name="fullName" placeholder="e.g. Jane Doe" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Email Address</label>
+                    <input type="email" name="email" placeholder="jane.doe@school.edu" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Classroom Assignment</label>
+                    <select name="studentClass.id" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                        <option value="">-- Unassigned --</option>
+                        <option th:each="classEntity : ${classes}" th:value="${classEntity.id}" th:text="${classEntity.className}">Class Name</option>
+                    </select>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-700 flex items-start gap-3 mt-4">
+                    <i class="ph-fill ph-info text-slate-400 dark:text-slate-500 mt-0.5"></i>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">System will assign role <span class="font-bold">STUDENT</span> and password <span class="font-mono bg-white dark:bg-slate-800 px-1 border border-slate-200 dark:border-slate-600 rounded">Student123</span>.</p>
+                </div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="toggleModal('studentModal')" class="flex-1 px-4 py-2.5 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors text-sm">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm text-sm">Save Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editStudentModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md p-6 md:p-8 rounded-2xl shadow-2xl relative border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Edit Student Profile</h3>
+                <button onclick="closeEditStudentModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <form th:action="@{/admin/update-student}" method="post" class="space-y-4">
+                <input type="hidden" name="id" id="editStudentId">
+                 <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Student ID</label>
+                    <input type="text" name="studentId" id="editStudentIdText" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Full Name</label>
+                    <input type="text" name="fullName" id="editStudentName" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Email Address</label>
+                    <input type="email" name="email" id="editStudentEmail" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Classroom Assignment</label>
+                    <select name="classId" id="editStudentClass" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                        <option value="">-- Unassigned --</option>
+                        <option th:each="classEntity : ${classes}" th:value="${classEntity.id}" th:text="${classEntity.className}">Class Name</option>
+                    </select>
+                </div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="closeEditStudentModal()" class="flex-1 px-4 py-2.5 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors text-sm">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="gradeModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm p-6 md:p-8 rounded-2xl shadow-2xl relative border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Add Grade</h3>
+                <button onclick="closeGradeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <p id="modalStudentName" class="text-sm text-indigo-600 dark:text-indigo-400 font-medium mb-6">Student Name</p>
+            
+            <form th:action="@{/admin/add-grade}" method="post" class="space-y-4">
+                <input type="hidden" name="student.id" id="modalStudentId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Term / Semester</label>
+                    <select name="semester" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                        <option value="Semester 1">Semester 1</option>
+                        <option value="Semester 2">Semester 2</option>
+                        <option value="Midterms">Midterms</option>
+                        <option value="Finals">Finals</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Subject</label>
+                    <input type="text" name="subject" placeholder="e.g. Mathematics" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Marks (0-100)</label>
+                    <input type="number" name="marks" placeholder="85" min="0" max="100" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <button type="submit" class="w-full mt-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm text-sm">Submit Grade</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="viewGradesModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg p-6 md:p-8 rounded-2xl shadow-2xl relative flex flex-col max-h-[90vh] border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-white" id="viewStudentName">Student Marks</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Academic Performance History</p>
+                </div>
+                <button onclick="closeViewModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 mt-2">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Term</th>
+                            <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Subject</th>
+                            <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 text-right">Marks</th>
+                            <th class="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradesTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="editGradeModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm p-6 md:p-8 rounded-2xl shadow-2xl relative border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Update Grade</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            
+            <form th:action="@{/admin/update-grade}" method="post" class="space-y-4">
+                <input type="hidden" name="id" id="editGradeId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Term / Semester</label>
+                    <select name="semester" id="editSemester" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                        <option value="Semester 1">Semester 1</option>
+                        <option value="Semester 2">Semester 2</option>
+                        <option value="Midterms">Midterms</option>
+                        <option value="Finals">Finals</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Subject</label>
+                    <input type="text" name="subject" id="editSubject" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Marks</label>
+                    <input type="number" name="marks" id="editMarks" min="0" max="100" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
+                </div>
+                <button type="submit" class="w-full mt-2 px-4 py-2.5 bg-slate-800 dark:bg-indigo-600 text-white rounded-lg font-medium hover:bg-slate-900 dark:hover:bg-indigo-700 transition-colors shadow-sm text-sm">Update Record</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="eventModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm p-6 md:p-8 rounded-2xl shadow-2xl relative border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Add Calendar Event</h3>
+                <button onclick="document.getElementById('eventModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <form th:action="@{/admin/add-event}" method="post" class="space-y-4">
+                <div><label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Event Title</label><input type="text" name="title" required placeholder="e.g. Midterm Exams Begin" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white"></div>
+                <div><label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Date</label><input type="date" name="eventDate" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white"></div>
+                <div><label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Event Type</label><select name="eventType" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white"><option value="EXAM">Examination</option><option value="HOLIDAY">Holiday / Break</option><option value="ACTIVITY">School Activity</option></select></div>
+                <button type="submit" class="w-full mt-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-sm transition-colors text-sm">Post Event</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="passwordModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm p-6 md:p-8 rounded-2xl shadow-2xl relative border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Security Settings</h3>
+                <button onclick="document.getElementById('passwordModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <form th:action="@{/change-password}" method="post" class="space-y-4">
+                <div><label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Current Password</label><input type="password" name="oldPassword" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white"></div>
+                <div><label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">New Password</label><input type="password" name="newPassword" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white"></div>
+                <button type="submit" class="w-full mt-2 px-4 py-2.5 bg-slate-800 dark:bg-indigo-600 text-white rounded-lg font-medium hover:bg-slate-900 dark:hover:bg-indigo-700 transition-colors shadow-sm text-sm">Update Password</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 1. DYNAMIC TIME GREETING
+        const hourOfDay = new Date().getHours();
+        let greetingMsg = "Good Evening";
+        if (hourOfDay < 12) greetingMsg = "Good Morning";
+        else if (hourOfDay < 18) greetingMsg = "Good Afternoon";
+        
+        const greetingElement = document.getElementById('dynamicGreeting');
+        if (greetingElement) greetingElement.innerText = greetingMsg;
+
+        // 2. THEME TOGGLE LOGIC
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+
+        if (document.documentElement.classList.contains('dark')) {
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+            
+            if (isDark) {
+                themeToggleDarkIcon.classList.add('hidden');
+                themeToggleLightIcon.classList.remove('hidden');
+            } else {
+                themeToggleLightIcon.classList.add('hidden');
+                themeToggleDarkIcon.classList.remove('hidden');
+            }
+        });
+
+        // 3. TABLE SEARCH
+        function runAdvancedSearch() {
+            const searchText = document.getElementById("searchInput").value.toLowerCase();
+            const classFilter = document.getElementById("classFilter").value;
+            const marksFilter = document.getElementById("marksFilter").value;
+            const rows = document.querySelectorAll(".student-row");
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const name = row.querySelector(".student-name").innerText.toLowerCase();
+                const email = row.querySelector(".student-email").innerText.toLowerCase();
+                const className = row.querySelector(".student-class").innerText.trim();
+                const marksText = row.querySelector(".student-marks").innerText.replace('%', '');
+                const marks = parseFloat(marksText) || 0;
+
+                const matchesText = name.includes(searchText) || email.includes(searchText);
+                const matchesClass = (classFilter === "ALL") || (className === classFilter);
+
+                let matchesMarks = true;
+                if (marksFilter !== "ALL") {
+                    if (marksFilter === "EXCELLENT") matchesMarks = marks >= 90;
+                    else if (marksFilter === "GOOD") matchesMarks = marks >= 75 && marks < 90;
+                    else if (marksFilter === "AVERAGE") matchesMarks = marks >= 50 && marks < 75;
+                    else if (marksFilter === "FAIL") matchesMarks = marks < 50;
+                }
+
+                if (matchesText && matchesClass && matchesMarks) {
+                    row.style.display = "";
+                    visibleCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            const noResultsRow = document.getElementById("noSearchResults");
+            if(noResultsRow) {
+                noResultsRow.style.display = (visibleCount === 0 && rows.length > 0) ? "" : "none";
+            }
+        }
+
+        // 4. ALL MODAL & AJAX LOGIC
+        function toggleModal(modalId) { 
+            const id = modalId || 'studentModal';
+            document.getElementById(id).classList.toggle('hidden'); 
+        }
+        
+        function openEditStudentModal(btn) {
+            document.getElementById('editStudentId').value = btn.getAttribute('data-id');
+            document.getElementById('editStudentIdText').value = btn.getAttribute('data-studentid'); 
+            document.getElementById('editStudentName').value = btn.getAttribute('data-name');
+            document.getElementById('editStudentEmail').value = btn.getAttribute('data-email');
+            const classId = btn.getAttribute('data-classid');
+            document.getElementById('editStudentClass').value = classId && classId !== 'null' ? classId : "";
+            document.getElementById('editStudentModal').classList.remove('hidden');
+        }
+
+        function closeEditStudentModal() { document.getElementById('editStudentModal').classList.add('hidden'); }
+        function closeGradeModal() { document.getElementById('gradeModal').classList.add('hidden'); }
+        function closeViewModal() { document.getElementById('viewGradesModal').classList.add('hidden'); }
+        function closeEditModal() { document.getElementById('editGradeModal').classList.add('hidden'); }
+
+        function openGradeModal(button) {
+            const studentId = button.getAttribute('data-id');
+            const studentName = button.getAttribute('data-name');
+            document.getElementById('modalStudentId').value = studentId;
+            document.getElementById('modalStudentName').innerText = "For: " + studentName;
+            document.getElementById('gradeModal').classList.remove('hidden');
+        }
+
+        // AJAX Fetch for View Grades
+        function showGrades(button) {
+            const studentId = button.getAttribute('data-id');
+            const studentName = button.getAttribute('data-name');
+            const tableBody = document.getElementById('gradesTableBody');
+            
+            document.getElementById('viewStudentName').innerText = studentName;
+            document.getElementById('viewGradesModal').classList.remove('hidden');
+            tableBody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400"><i class="ph ph-spinner animate-spin text-xl mb-2"></i><br>Loading records...</td></tr>';
+
+            fetch('/admin/student-grades/' + studentId)
+                .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+                .then(data => {
+                    tableBody.innerHTML = "";
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400"><i class="ph ph-folder-open text-2xl mb-2 text-slate-300 dark:text-slate-600"></i><br>No grades recorded.</td></tr>';
+                    } else {
+                        data.forEach(grade => {
+                            tableBody.innerHTML += `
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">${grade.semester || 'N/A'}</td>
+                                    <td class="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">${grade.subject}</td>
+                                    <td class="px-4 py-3 text-right font-bold text-slate-800 dark:text-white">${grade.marks}</td>
+                                    <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                                        <button onclick="editGrade(${grade.id}, '${grade.semester}', '${grade.subject}', ${grade.marks})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors" title="Edit"><i class="ph ph-pencil-simple text-lg"></i></button>
+                                        <button onclick="confirmDeleteGrade(${grade.id})" class="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors" title="Delete"><i class="ph ph-trash text-lg"></i></button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    }
+                })
+                .catch(() => {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-rose-500 dark:text-rose-400">Error loading data.</td></tr>';
+                });
+        }
+
+        function editGrade(id, semester, subject, marks) {
+            document.getElementById('editGradeId').value = id;
+            document.getElementById('editSemester').value = semester && semester !== 'null' ? semester : 'Semester 1'; 
+            document.getElementById('editSubject').value = subject;
+            document.getElementById('editMarks').value = marks;
+            closeViewModal();
+            document.getElementById('editGradeModal').classList.remove('hidden');
+        }
+
+        function confirmDeleteGrade(id) {
+            if (confirm("Are you sure you want to permanently delete this record?")) {
+                window.location.href = '/admin/delete-grade/' + id;
+            }
+        }
+
+        function hideMessage(element) {
+            if (element) { element.closest('div').style.display = 'none'; } 
+            else { const msgs = document.getElementById('status-message'); if (msgs) msgs.style.display = 'none'; }
+        }
+
+        // Close Modals on Escape or Click outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('fixed')) { event.target.classList.add('hidden'); }
+        }
+        document.onkeydown = function(evt) {
+            if (evt.key === "Escape") { document.querySelectorAll('.fixed:not(.hidden)').forEach(el => el.classList.add('hidden')); }
+        };
+
+        window.onload = function() {
+            setTimeout(() => { const msg = document.getElementById('status-message'); if (msg) msg.style.display = 'none'; }, 5000);
+            const url = new URL(window.location);
+            ['added', 'deleted', 'gradeDeleted', 'studentUpdated'].forEach(param => {
+                if(url.searchParams.has(param)) {
+                    url.searchParams.delete(param);
+                    window.history.replaceState({}, '', url);
+                }
+            });
+        };
+    </script>
+</body>
+</html>
