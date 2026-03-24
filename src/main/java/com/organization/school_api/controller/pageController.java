@@ -34,6 +34,13 @@ import com.lowagie.text.pdf.PdfWriter;
 import jakarta.servlet.http.HttpServletResponse;
 import java.awt.Color;
 
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.security.Principal;
+
 import com.organization.school_api.Entity.AcademicEvent;
 import com.organization.school_api.Entity.Attendance;
 import com.organization.school_api.Entity.ClassEntity;
@@ -98,21 +105,23 @@ public class pageController {
     }
 
     // Checks if the OTP they typed matches the database
-    @PostMapping("/verify-otp")
-    public String checkOtp(@RequestParam String email, @RequestParam String otp) {
+   @PostMapping("/verify-otp")
+    public String verifyOtp(@RequestParam String email, @RequestParam String otp) {
         User user = userRepository.findByEmail(email).orElse(null);
-        
-        if (user != null && user.getOtp() != null && user.getOtp().equals(otp)) {
-            // Success! Mark as verified and clear the OTP so it can't be used again
+
+        if (user != null && user.getOtp().equals(otp)) {
+            // 1. Mark user as verified
             user.setVerified(true);
-            user.setOtp(null); 
+            user.setOtp(null); // clear the OTP
             userRepository.save(user);
-            
+
+            // 2. NOW SEND THE WELCOME EMAIL (After verification is successful!)
+            emailService.sendWelcomeEmail(user.getEmail(), user.getFullName());
+
             return "redirect:/login?verified=true";
         }
-        
-        // Failed! Send back to the page with an error
-        return "redirect:/verify-otp?email=" + email + "&error=invalid";
+
+        return "redirect:/verify-otp-page?error=invalid";
     }
 
     @GetMapping("/logout")
@@ -152,27 +161,6 @@ public class pageController {
         }
         
         return "redirect:/admin/dashboard?deleted";
-    }
-
-    @PostMapping("/admin/add-student")
-    public String adminAddStudent(@ModelAttribute("user") User user){
-        System.out.println("ADMIN ACTION: Adding student -> " + user.getFullName());
-
-        try {
-            // 2. Set default security details
-            user.setPassword(passwordEncoder.encode("Student123"));
-            user.setRole("STUDENT");
-
-            // 3. Force save
-            userRepository.save(user);
-            System.out.println("SUCCESS: Student saved to MySQL.");
-            
-        } catch (Exception e) {
-            // 4. This will tell us WHY MySQL rejected it (e.g., Duplicate Email)
-            System.out.println("ERROR SAVING: " + e.getMessage());
-        }
-
-        return "redirect:/admin/dashboard?added";
     }
 
     @GetMapping("/admin/classes")
@@ -731,5 +719,121 @@ public class pageController {
     public String deleteEvent(@PathVariable Long id) {
         eventRepository.deleteById(id);
         return "redirect:/admin/dashboard?eventDeleted=true";
+    }
+
+    @GetMapping("/admin/profile")
+    public String showAdminProfile(Principal principal, Model model) {
+        // Fetch the currently logged-in admin
+        User admin = userRepository.findByEmail(principal.getName()).orElseThrow();
+        model.addAttribute("admin", admin);
+        return "admin-profile";
+    }
+
+    @PostMapping("/admin/update-profile")
+    public String updateAdminProfile(
+            Principal principal,
+            @RequestParam("fullName") String fullName,
+            @RequestParam("phoneNumber") String phoneNumber,
+            @RequestParam("bio") String bio,
+            @RequestParam("profileImage") MultipartFile profileImage) {
+
+        User admin = userRepository.findByEmail(principal.getName()).orElseThrow();
+        
+        // 1. Update text fields
+        admin.setFullName(fullName);
+        admin.setPhoneNumber(phoneNumber);
+        admin.setBio(bio);
+
+        // 2. Handle the Image Upload
+        if (!profileImage.isEmpty()) {
+            try {
+                String uploadDir = "uploads/";
+                Path uploadPath = Paths.get(uploadDir);
+                
+                // Create the uploads folder if it doesn't exist
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                // Generate a unique filename so images don't overwrite each other (e.g., 123e4567_myphoto.png)
+                String filename = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
+                Path filePath = uploadPath.resolve(filename);
+                
+                // Copy the file to the local folder
+                Files.copy(profileImage.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                // Save only the filename in the database
+                admin.setProfilePhoto(filename);
+                
+            } catch (Exception e) {
+                System.out.println("Error saving image: " + e.getMessage());
+            }
+        }
+
+        userRepository.save(admin);
+        return "redirect:/admin/profile?updated=true";
+    }
+
+    @PostMapping("/student/update-photo")
+    public String updateStudentPhoto(
+            HttpSession session, 
+            @RequestParam("profileImage") MultipartFile profileImage) {
+        
+        // 1. Get the currently logged-in student
+        String email = (String) session.getAttribute("email");
+        if (email == null) return "redirect:/login";
+        
+        User student = userRepository.findByEmail(email).orElseThrow();
+
+        // 2. Process the Image
+        if (!profileImage.isEmpty()) {
+            try {
+                String uploadDir = "uploads/";
+                java.nio.file.Path uploadPath = java.nio.file.Paths.get(uploadDir);
+                
+                if (!java.nio.file.Files.exists(uploadPath)) {
+                    java.nio.file.Files.createDirectories(uploadPath);
+                }
+
+                // Generate a unique filename
+                String filename = java.util.UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
+                java.nio.file.Path filePath = uploadPath.resolve(filename);
+                
+                // Copy the file
+                java.nio.file.Files.copy(profileImage.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+                // Save filename to database
+                student.setProfilePhoto(filename);
+                userRepository.save(student);
+                
+            } catch (Exception e) {
+                System.out.println("Error saving student image: " + e.getMessage());
+            }
+        }
+
+        return "redirect:/student/dashboard?photoUpdated=true";
+    }
+
+    @PostMapping("/admin/add-student")
+    public String addStudent(@ModelAttribute User student) {
+        
+        // 1. Set the default role and password
+        student.setRole("STUDENT");
+        student.setPassword("Student123"); // (If you are using BCrypt, encode this first!)
+        
+        // 2. Save the student to the database
+        userRepository.save(student);
+
+        // 3. TRIGGER THE EMAIL 
+        // Pass the raw password "Student123" so the service can print it in the email
+        emailService.sendStudentWelcomeEmail(
+            student.getEmail(), 
+            student.getFullName(), 
+            "Student123", 
+            student.getStudentId()
+        );
+
+        // Redirect back to the dashboard with the success flag
+        return "redirect:/admin/dashboard?added=true";
     }
 }

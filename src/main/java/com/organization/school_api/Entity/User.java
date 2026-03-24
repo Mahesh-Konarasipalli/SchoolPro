@@ -46,6 +46,14 @@ public class User {
     private String otp;
     private boolean isVerified = false;
     private String resetToken;
-    @Column(unique = true, nullable = true) // Nullable because Admins might not have one
+    @Column(unique = true, nullable = true)
     private String studentId;
+    @Column(nullable = true)
+    private String profilePhoto; // Stores the image filename
+
+    @Column(nullable = true)
+    private String phoneNumber;
+
+    @Column(length = 500, nullable = true)
+    private String bio;
 }

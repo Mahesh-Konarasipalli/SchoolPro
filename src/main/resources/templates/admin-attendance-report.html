@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Portal | Attendance Analytics</title>
+    <title th:text="#{admin.report.page.title}">Admin Portal | Attendance Analytics</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -48,26 +48,26 @@
             </div>
             
             <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Management</p>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2" th:text="#{admin.nav.management}">Management</p>
                 <a th:href="@{/admin/dashboard}" class="flex items-center gap-3 p-3 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg font-medium transition-colors hover:text-white">
-                    <i class="ph ph-users text-lg"></i> Students
+                    <i class="ph ph-users text-lg"></i> <span th:text="#{admin.nav.students}">Students</span>
                 </a>
                 <a th:href="@{/admin/classes}" class="flex items-center gap-3 p-3 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg font-medium transition-colors hover:text-white">
-                    <i class="ph ph-books text-lg"></i> Classes
+                    <i class="ph ph-books text-lg"></i> <span th:text="#{admin.nav.classes}">Classes</span>
                 </a>
                 <a th:href="@{/admin/attendance}" class="flex items-center gap-3 p-3 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg font-medium transition-colors hover:text-white">
-                    <i class="ph ph-calendar-check text-lg"></i> Take Attendance
+                    <i class="ph ph-calendar-check text-lg"></i> <span th:text="#{admin.nav.attendance}">Take Attendance</span>
                 </a>
                 <a href="#" class="flex items-center gap-3 p-3 bg-indigo-600 text-white rounded-lg font-medium shadow-sm transition-colors">
-                    <i class="ph ph-chart-line-up text-lg"></i> Reports
+                    <i class="ph ph-chart-line-up text-lg"></i> <span th:text="#{admin.nav.reports}">Reports</span>
                 </a>
             </nav>
             <button onclick="document.getElementById('passwordModal').classList.remove('hidden')" class="flex items-center gap-3 p-3 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg transition-colors w-[calc(100%-2rem)] mx-4 text-left mb-2">
-                <i class="ph ph-lock-key text-lg"></i> Security
+                <i class="ph ph-lock-key text-lg"></i> <span th:text="#{admin.nav.security}">Security</span>
             </button>
             <div class="p-4 border-t border-slate-800 dark:border-slate-800/50">
                 <a th:href="@{/logout}" class="flex items-center gap-3 p-3 text-slate-400 hover:text-rose-400 hover:bg-slate-800 dark:hover:bg-white/5 rounded-lg transition-colors">
-                    <i class="ph ph-sign-out text-lg"></i> Logout
+                    <i class="ph ph-sign-out text-lg"></i> <span th:text="#{admin.nav.logout}">Logout</span>
                 </a>
             </div>
         </aside>
@@ -77,18 +77,56 @@
             <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-8 py-5 flex justify-between items-center shrink-0 z-10 transition-colors duration-300">
                 <div>
                     <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
-                        <span id="dynamicGreeting">Welcome</span>, Admin! 👋
+                        <span id="dynamicGreeting" th:text="#{admin.greeting}">Welcome</span>, Admin! 👋
                     </h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Class-wide summary and performance metrics</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5" th:text="#{admin.report.subtitle}">Class-wide summary and performance metrics</p>
                 </div>
                 
                 <div class="flex items-center gap-4">
                     <a th:href="@{/admin/attendance}" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-5 py-2.5 rounded-lg font-medium shadow-sm flex items-center gap-2 transition-all">
-                        <i class="ph-bold ph-arrow-left text-lg"></i> Back to Roll Call
+                        <i class="ph-bold ph-arrow-left text-lg"></i> <span th:text="#{admin.report.btn.back}">Back to Roll Call</span>
                     </a>
+
+                   <div class="relative group z-50">
+                        <button class="bg-white dark:bg-slate-800 text-slate-500 dark:text-amber-400 p-3 rounded-full shadow-md border border-slate-200 dark:border-slate-700 hover:scale-110 transition-transform flex items-center justify-center">
+                            🌐
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 overflow-hidden">
+                            
+                            <a href="?lang=en" class="block px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors">
+                                🇬🇧 English
+                            </a>
+                            
+                            <a href="?lang=hi" class="block px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors">
+                                🇮🇳 हिन्दी (Hindi)
+                            </a>
+                            
+                            <a href="?lang=te" class="block px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors">
+                                🇮🇳 తెలుగు (Telugu)
+                            </a>
+                            
+                            <a href="?lang=mr" class="block px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors">
+                                🇮🇳 मराठी (Marathi)
+                            </a>
+                            
+                            <a href="?lang=ta" class="block px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors">
+                                🇮🇳 தமிழ் (Tamil)
+                            </a>
+                            
+                            <a href="?lang=kn" class="block px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors">
+                                🇮🇳 ಕನ್ನಡ (Kannada)
+                            </a>
+                            
+                            <a href="?lang=ml" class="block px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors">
+                                🇮🇳 മലയാളം (Malayalam)
+                            </a>
+                            
+                        </div>
+                    </div>
+
                     <button id="theme-toggle" type="button" class="bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-amber-400 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-amber-500 transition-all">
-                        <i id="theme-toggle-dark-icon" class="ph-fill ph-moon hidden text-xl"></i>
-                        <i id="theme-toggle-light-icon" class="ph-fill ph-sun hidden text-xl"></i>
+                        <i id="theme-toggle-dark-icon" class="ph-fill ph-moon hidden text-xl">🌙</i>
+                        <i id="theme-toggle-light-icon" class="ph-fill ph-sun hidden text-xl">☀️</i>
                     </button>
                 </div>
             </header>
@@ -98,18 +136,18 @@
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-8 transition-colors">
                     <form th:action="@{/admin/attendance-report}" method="get" class="flex flex-col md:flex-row items-end gap-4">
                         <div class="w-full md:w-1/3">
-                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Generate Report For</label>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide" th:text="#{admin.report.select.class}">Generate Report For</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="ph ph-chalkboard-teacher text-lg"></i></span>
                                 <select name="classId" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-slate-50 dark:bg-slate-900 dark:text-white font-medium cursor-pointer appearance-none transition-colors">
-                                    <option value="" disabled selected th:if="${selectedClass == null}">Choose a classroom...</option>
+                                    <option value="" disabled selected th:if="${selectedClass == null}" th:text="#{admin.attendance.select.class.placeholder}">Choose a classroom...</option>
                                     <option th:each="c : ${classes}" th:value="${c.id}" th:text="${c.className}" th:selected="${selectedClass != null and selectedClass.id == c.id}"></option>
                                 </select>
                             </div>
                         </div>
                         
                         <div class="w-full md:w-1/4">
-                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Filter by Month (Optional)</label>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide" th:text="#{admin.report.filter.month}">Filter by Month (Optional)</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="ph ph-calendar text-lg"></i></span>
                                 <input type="month" name="monthFilter" th:value="${monthFilter}" class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-slate-50 dark:bg-slate-900 dark:text-white font-medium cursor-pointer transition-colors">
@@ -117,7 +155,7 @@
                         </div>
 
                         <button type="submit" class="w-full md:w-auto px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
-                            <i class="ph ph-chart-bar text-lg"></i> View Screen Report
+                            <i class="ph ph-chart-bar text-lg"></i> <span th:text="#{admin.report.btn.view}">View Screen Report</span>
                         </button>
                     </form>
                 </div>
@@ -126,13 +164,13 @@
                     
                     <div class="flex items-center justify-between mb-4 px-2">
                         <div>
-                            <h3 class="text-xl font-bold text-slate-800 dark:text-white" th:text="${selectedClass.className} + ' Summary'">Class Summary</h3>
+                            <h3 class="text-xl font-bold text-slate-800 dark:text-white"><span th:text="${selectedClass.className}"></span> <span th:text="#{admin.report.summary.title}">Summary</span></h3>
                             <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" th:text="${monthFilter != null and monthFilter != '' ? 'Showing data for ' + monthFilter : 'Showing All-Time data'}"></p>
                         </div>
                         
                         <a th:href="@{/admin/download-attendance(classId=${selectedClass.id}, monthFilter=${monthFilter})}" target="_blank" 
                            class="bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 font-bold px-4 py-2 rounded-lg border border-indigo-200 dark:border-indigo-500/30 shadow-sm transition-all flex items-center gap-2">
-                            <i class="ph-bold ph-download-simple text-lg"></i> Export to PDF
+                            <i class="ph-bold ph-download-simple text-lg"></i> <span th:text="#{admin.report.btn.export}">Export to PDF</span>
                         </a>
                      </div>
 
@@ -140,12 +178,12 @@
                         <table class="w-full text-left text-sm whitespace-nowrap">
                             <thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-semibold">
                                 <tr>
-                                    <th class="px-6 py-4">Student</th>
-                                    <th class="px-6 py-4 text-center">Present</th>
-                                    <th class="px-6 py-4 text-center">Late</th>
-                                    <th class="px-6 py-4 text-center">Absent</th>
-                                    <th class="px-6 py-4 text-center">Total Days</th>
-                                    <th class="px-6 py-4 w-64">Overall Rate</th>
+                                    <th class="px-6 py-4" th:text="#{admin.report.table.student}">Student</th>
+                                    <th class="px-6 py-4 text-center" th:text="#{admin.attendance.radio.present}">Present</th>
+                                    <th class="px-6 py-4 text-center" th:text="#{admin.attendance.radio.late}">Late</th>
+                                    <th class="px-6 py-4 text-center" th:text="#{admin.attendance.radio.absent}">Absent</th>
+                                    <th class="px-6 py-4 text-center" th:text="#{admin.report.table.total}">Total Days</th>
+                                    <th class="px-6 py-4 w-64" th:text="#{admin.report.table.rate}">Overall Rate</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -179,7 +217,7 @@
                                 <tr th:if="${#lists.isEmpty(summaryList)}">
                                     <td colspan="6" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                         <i class="ph ph-folder-dashed text-4xl mb-3 text-slate-300 dark:text-slate-600"></i>
-                                        <p class="font-medium">No students or attendance records found for this class.</p>
+                                        <p class="font-medium" th:text="#{admin.report.table.empty}">No students or attendance records found for this class.</p>
                                     </td>
                                 </tr>
                             </tbody>
@@ -191,8 +229,8 @@
                     <div class="w-20 h-20 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="ph ph-chart-pie-slice text-4xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Run Analytics</h3>
-                    <p class="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Select a classroom from the dropdown above to generate a full attendance summary report.</p>
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2" th:text="#{admin.report.empty.title}">Run Analytics</h3>
+                    <p class="text-slate-500 dark:text-slate-400 max-w-sm mx-auto" th:text="#{admin.report.empty.subtitle}">Select a classroom from the dropdown above to generate a full attendance summary report.</p>
                 </div>
 
             </div>
@@ -202,29 +240,37 @@
     <div id="passwordModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity">
         <div class="bg-white dark:bg-slate-800 w-full max-w-sm p-6 md:p-8 rounded-2xl shadow-2xl relative border border-slate-200 dark:border-slate-700">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Change Password</h3>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white" th:text="#{admin.modal.password.title}">Change Password</h3>
                 <button onclick="document.getElementById('passwordModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i class="ph ph-x text-xl"></i></button>
             </div>
             <form th:action="@{/change-password}" method="post" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Current Password</label>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5" th:text="#{admin.modal.security.current}">Current Password</label>
                     <input type="password" name="oldPassword" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">New Password</label>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5" th:text="#{admin.modal.security.new}">New Password</label>
                     <input type="password" name="newPassword" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-900 dark:text-white">
                 </div>
-                <button type="submit" class="w-full mt-2 px-4 py-2.5 bg-slate-800 dark:bg-indigo-600 text-white rounded-lg font-medium hover:bg-slate-900 dark:hover:bg-indigo-700 transition-colors shadow-sm text-sm">Update Securely</button>
+                <button type="submit" class="w-full mt-2 px-4 py-2.5 bg-slate-800 dark:bg-indigo-600 text-white rounded-lg font-medium hover:bg-slate-900 dark:hover:bg-indigo-700 transition-colors shadow-sm text-sm" th:text="#{admin.modal.password.btn}">Update Securely</button>
             </form>
         </div>
     </div>
     
+    <script th:inline="javascript">
+        const i18n = {
+            morning: /*[[#{admin.greeting.morning}]]*/ 'Good Morning',
+            afternoon: /*[[#{admin.greeting.afternoon}]]*/ 'Good Afternoon',
+            evening: /*[[#{admin.greeting.evening}]]*/ 'Good Evening'
+        };
+    </script>
+
     <script>
         // 1. DYNAMIC TIME GREETING
         const hourOfDay = new Date().getHours();
-        let greetingMsg = "Good Evening";
-        if (hourOfDay < 12) greetingMsg = "Good Morning";
-        else if (hourOfDay < 18) greetingMsg = "Good Afternoon";
+        let greetingMsg = i18n.evening;
+        if (hourOfDay < 12) greetingMsg = i18n.morning;
+        else if (hourOfDay < 18) greetingMsg = i18n.afternoon;
         
         const greetingElement = document.getElementById('dynamicGreeting');
         if (greetingElement) greetingElement.innerText = greetingMsg;

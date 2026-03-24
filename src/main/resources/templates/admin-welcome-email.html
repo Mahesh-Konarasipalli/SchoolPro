@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%); padding: 40px; text-align: center; color: white; }
+        .content { padding: 40px; color: #334155; line-height: 1.6; }
+        .footer { padding: 20px; text-align: center; color: #94a3b8; font-size: 12px; background: #f1f5f9; }
+        .btn { display: inline-block; padding: 14px 30px; background-color: #4f46e5; color: #ffffff !important; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 20px; transition: background 0.3s; }
+        .badge { background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        h1 { margin: 10px 0; font-size: 28px; }
+        p { font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="font-size: 50px;">🏫</div>
+            <h1>Welcome to SchoolPro!</h1>
+            <p>Your campus management hub is ready.</p>
+        </div>
+
+        <div class="content">
+            <span class="badge">Verified Administrator</span>
+            <p>Hi <strong th:text="${name}">[User Name]</strong>,</p>
+            <p>We are thrilled to welcome you to the team! Your <strong>SchoolPro</strong> administrator account has been successfully verified and activated. You are now equipped with the tools to shape the future of learning on your campus.</p>
+            
+            <p><strong>What can you do from your dashboard?</strong></p>
+            <ul>
+                <li>Manage student enrollments and class assignments.</li>
+                <li>Record daily attendance and generate performance analytics.</li>
+                <li>Schedule upcoming exams, holidays, and campus events.</li>
+            </ul>
+
+            <div style="text-align: center;">
+                <a th:href="${loginUrl}" class="btn">Enter Admin Portal</a>           
+            </div>
+
+            <p style="margin-top: 30px;">If you need any assistance setting up your classes or directory, our support team is just an email away. Simply reply to this message!</p>
+            
+            <p>Best regards,<br><strong>The SchoolPro Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 SchoolPro Management System. All rights reserved.</p>
+            <p>If you didn't create an account, please ignore this email.</p>
+        </div>
+    </div>
+</body>
+</html>

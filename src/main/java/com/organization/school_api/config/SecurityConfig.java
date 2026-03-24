@@ -1,4 +1,4 @@
-package com.organization.school_api;
+package com.organization.school_api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
